@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediccion de LapTime F1</title>
+    <style>
+        :root {
+            --bg: #f4efe6;
+            --panel: #fffaf2;
+            --ink: #1d1d1b;
+            --accent: #c1121f;
+            --accent-dark: #780000;
+            --line: #d8cdbf;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(193, 18, 31, 0.12), transparent 28%),
+                linear-gradient(135deg, #f8f1e7, #efe3d1 55%, #ead8c3);
+            min-height: 100vh;
+        }
+
+        .layout {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 32px 20px 48px;
+        }
+
+        .hero {
+            margin-bottom: 24px;
+        }
+
+        .eyebrow {
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            color: var(--accent-dark);
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            line-height: 1;
+        }
+
+        .hero p {
+            max-width: 700px;
+            font-size: 1.02rem;
+        }
+
+        .card {
+            background: rgba(255, 250, 242, 0.92);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 18px 45px rgba(68, 47, 24, 0.12);
+            backdrop-filter: blur(8px);
+        }
+
+        .status {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+        }
+
+        .status.ok {
+            background: rgba(52, 168, 83, 0.12);
+            border: 1px solid rgba(52, 168, 83, 0.2);
+        }
+
+        .status.warn {
+            background: rgba(193, 18, 31, 0.08);
+            border: 1px solid rgba(193, 18, 31, 0.18);
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font: inherit;
+        }
+
+        .actions,
+        .result {
+            grid-column: 1 / -1;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 14px 22px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .result {
+            min-height: 60px;
+            margin-top: 8px;
+            padding: 16px;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid var(--line);
+        }
+
+        .result strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <main class="layout">
+        <section class="hero">
+            <div class="eyebrow">Machine Learning aplicado a F1</div>
+            <h1>Prediccion de tiempo de vuelta</h1>
+            <p>Esta app toma el modelo de tu notebook <code>Regresion_F1.ipynb</code> y lo expone con Flask, siguiendo el flujo visto en clase para despliegue.</p>
+        </section>
+
+        <section class="card">
+            {% if model_ready %}
+            <div class="status ok">El archivo <code>f1_laptime_bundle.pkl</code> esta disponible y la app puede predecir.</div>
+            {% else %}
+            <div class="status warn">Falta <code>f1_laptime_bundle.pkl</code>. Generelo primero con <code>exportar_modelo_f1.py</code>.</div>
+            {% endif %}
+
+            <form id="predict-form">
+                <div>
+                    <label for="Driver">Driver</label>
+                    <input type="text" id="Driver" name="Driver" placeholder="Ej. Verstappen" required>
+                </div>
+                <div>
+                    <label for="Compound">Compound</label>
+                    <input type="text" id="Compound" name="Compound" placeholder="Ej. Soft" required>
+                </div>
+                <div>
+                    <label for="LapNumber">LapNumber</label>
+                    <input type="number" step="1" id="LapNumber" name="LapNumber" required>
+                </div>
+                <div>
+                    <label for="Position">Position</label>
+                    <input type="number" step="1" id="Position" name="Position" required>
+                </div>
+                <div>
+                    <label for="Sector1Time">Sector1Time</label>
+                    <input type="number" step="any" id="Sector1Time" name="Sector1Time" required>
+                </div>
+                <div>
+                    <label for="Sector2Time">Sector2Time</label>
+                    <input type="number" step="any" id="Sector2Time" name="Sector2Time" required>
+                </div>
+                <div>
+                    <label for="Sector3Time">Sector3Time</label>
+                    <input type="number" step="any" id="Sector3Time" name="Sector3Time" required>
+                </div>
+                <div>
+                    <label for="MaxSpeed">MaxSpeed</label>
+                    <input type="number" step="any" id="MaxSpeed" name="MaxSpeed" required>
+                </div>
+
+                <div class="actions">
+                    <button type="submit">Predecir LapTime</button>
+                </div>
+                <div class="result" id="resultado">
+                    <strong>Resultado</strong>
+                    Esperando datos del formulario.
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById("predict-form");
+        const resultado = document.getElementById("resultado");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            resultado.innerHTML = "<strong>Resultado</strong>Calculando prediccion...";
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams(new FormData(form)).toString(),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "No fue posible generar la prediccion.");
+                }
+
+                resultado.innerHTML =
+                    "<strong>Resultado</strong>" +
+                    `LapTime estimado: ${data.prediccion_laptime} ${data.unidad}`;
+            } catch (error) {
+                resultado.innerHTML =
+                    "<strong>Error</strong>" + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
