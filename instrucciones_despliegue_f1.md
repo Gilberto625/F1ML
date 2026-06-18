@@ -11,6 +11,7 @@ En la raíz del proyecto deben estar estos archivos:
 - `f1_laptime_bundle.pkl`
 - `requirements.txt`
 - `Procfile`
+- `.python-version`
 - `templates/formulario.html`
 - `.gitignore`
 
@@ -30,7 +31,25 @@ f1_laptime_bundle.pkl
 
 Ese archivo debe subirse al repositorio, porque la app Flask lo carga directamente al arrancar.
 
-## 3. Prueba local antes de GitHub
+## 3. Version de Python para Render
+
+Render estaba intentando construir el proyecto con Python `3.14.3`, y eso rompe la instalación de `pandas==2.2.2`.
+
+Para evitarlo, este proyecto ya incluye:
+
+```text
+.python-version
+```
+
+Con este contenido:
+
+```text
+3.11.11
+```
+
+Eso obliga a Render a usar una versión compatible con las dependencias del proyecto.
+
+## 4. Prueba local antes de GitHub
 
 Verifica primero que la app funcione en local:
 
@@ -51,7 +70,7 @@ Debes comprobar lo siguiente:
 - Puedes capturar datos de F1.
 - La predicción devuelve un `LapTime` estimado.
 
-## 4. Preparar el repositorio Git
+## 5. Preparar el repositorio Git
 
 Si todavía no has inicializado Git:
 
@@ -75,7 +94,7 @@ Revisa especialmente que sí aparezcan:
 - `templates/formulario.html`
 - `f1_laptime_bundle.pkl`
 
-## 5. Subir el proyecto a GitHub
+## 6. Subir el proyecto a GitHub
 
 Conecta el proyecto con tu repositorio remoto:
 
@@ -95,7 +114,7 @@ Si tu rama principal es `master`, entonces usa:
 git push -u origin master
 ```
 
-## 6. Crear el servicio en Render
+## 7. Crear el servicio en Render
 
 1. Entra a `https://render.com`
 2. Inicia sesión.
@@ -105,7 +124,7 @@ git push -u origin master
 6. Conecta tu cuenta de GitHub si todavía no está conectada.
 7. Selecciona el repositorio de este proyecto.
 
-## 7. Configuración exacta en Render
+## 8. Configuración exacta en Render
 
 Cuando Render pida la configuración del servicio, usa estos valores:
 
@@ -123,7 +142,7 @@ Si Render detecta automáticamente el `Procfile`, está bien. Aun así, el `Star
 gunicorn app:app
 ```
 
-## 8. Archivos usados por el despliegue
+## 9. Archivos usados por el despliegue
 
 ### `requirements.txt`
 
@@ -146,7 +165,15 @@ Debe contener:
 web: gunicorn app:app
 ```
 
-## 9. Primer despliegue
+### `.python-version`
+
+Debe contener:
+
+```text
+3.11.11
+```
+
+## 10. Primer despliegue
 
 Después de crear el servicio:
 
@@ -161,7 +188,7 @@ Si todo salió bien, Render te dará una URL pública similar a:
 https://tu-app.onrender.com
 ```
 
-## 10. Verificación final en producción
+## 11. Verificación final en producción
 
 Una vez desplegada la app, verifica:
 
@@ -171,7 +198,7 @@ Una vez desplegada la app, verifica:
 - La predicción responde desde `/predict`.
 - El diseño sigue siendo responsivo en móvil y escritorio.
 
-## 11. Errores comunes y cómo corregirlos
+## 12. Errores comunes y cómo corregirlos
 
 ### Error 1: no encuentra `f1_laptime_bundle.pkl`
 
@@ -238,7 +265,25 @@ Solución:
 - Revisa los logs de Render.
 - Confirma que el archivo `f1_laptime_bundle.pkl` fue generado con el mismo flujo del notebook.
 
-## 12. Cómo actualizar la app después
+### Error 5: falla instalando `pandas` o `numpy`
+
+Causa:
+
+- Render usa una versión de Python demasiado nueva para las dependencias fijadas.
+
+Solución:
+
+- Confirma que el repositorio incluya `.python-version`
+- Confirma que su contenido sea:
+
+```text
+3.11.11
+```
+
+- Haz `git add .`, `git commit` y `git push`
+- Lanza un nuevo deploy en Render
+
+## 13. Cómo actualizar la app después
 
 Cada vez que cambies el modelo o el código:
 
@@ -258,16 +303,17 @@ git push
 
 3. Render hará un nuevo despliegue automático si el repositorio quedó conectado.
 
-## 13. Resumen corto
+## 14. Resumen corto
 
 El flujo correcto para este proyecto es:
 
 1. Entrenar o validar el modelo en `Regresion_F1.ipynb`
 2. Exportarlo con `python exportar_modelo_f1.py`
-3. Probarlo localmente con `python app.py`
-4. Subir todo a GitHub, incluyendo `f1_laptime_bundle.pkl`
-5. Crear un `Web Service` en Render
-6. Usar:
+3. Verificar que `.python-version` exista con `3.11.11`
+4. Probarlo localmente con `python app.py`
+5. Subir todo a GitHub, incluyendo `f1_laptime_bundle.pkl`
+6. Crear un `Web Service` en Render
+7. Usar:
 
 - `Build Command`: `pip install -r requirements.txt`
 - `Start Command`: `gunicorn app:app`
