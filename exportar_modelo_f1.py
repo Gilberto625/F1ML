@@ -42,6 +42,13 @@ def main():
         "encoder": encoder,
         "feature_columns": list(X.columns),
         "numeric_medians": numeric_medians.to_dict(),
+        "numeric_ranges": {
+            column: {
+                "min": float(data[column].min()),
+                "max": float(data[column].max()),
+            }
+            for column in numeric_cols
+        },
         "categorical_columns": CATEGORICAL_COLUMNS,
         "target_column": TARGET_COLUMN,
         "metrics": {
